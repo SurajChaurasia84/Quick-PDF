@@ -780,7 +780,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       ShareParams(
         files: <XFile>[XFile(_currentFile.path)],
         subject: _currentFile.name,
-        text: 'Shared from PDF Studio',
+        text: 'Shared from Quick PDF',
       ),
     );
   }
