@@ -27,7 +27,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const String _shareMessage =
       'Try PDF Studio for fast offline document reading and PDF tools.\n\n$_playStoreUrl';
   static const String _privacyUrl = 'https://www.example.com/privacy-policy';
-  static const String _aboutAssetPath = 'assets/about_us.txt';
 
   late final StorageInfoService _storageInfoService = StorageInfoService();
   late Future<StorageOverview?> _storageOverviewFuture =
@@ -41,13 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _storageOverviewFuture;
   }
 
-  Future<String> _loadAssetText(String path, String fallbackText) async {
-    try {
-      return await rootBundle.loadString(path);
-    } catch (_) {
-      return fallbackText;
-    }
-  }
 
   Future<void> _openPrivacyPage(BuildContext context) async {
     final uri = Uri.parse(_privacyUrl);
@@ -89,13 +81,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 future: _storageOverviewFuture,
                 builder: (context, snapshot) {
                   final overview = snapshot.data;
-                  final downloadsFolderBytes = controller.downloadFiles.fold<int>(
-                    0,
-                    (sum, file) => sum + file.size,
-                  );
-                  final downloadsFolderSize = formatFileSize(
-                    downloadsFolderBytes,
-                  );
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -130,21 +115,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               icon: Icons.phone_android_rounded,
                               accent: const Color(0xFF2D87F3),
                               title: 'Internal Storage',
-                              showUsedValue: false,
-                            ),
-                            _StorageCard(
-                              info: const StorageInfo(
-                                label: 'Downloads',
-                                path: '',
-                                totalBytes: 0,
-                                availableBytes: 0,
-                                isAvailable: true,
-                              ),
-                              icon: Icons.download_rounded,
-                              accent: const Color(0xFF00B7FF),
-                              title: 'Downloads',
-                              customSummary: downloadsFolderSize,
-                              availableValue: '--',
                               showUsedValue: false,
                             ),
                             _StorageCard(
@@ -371,7 +341,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   onTap: () async {
                     Navigator.of(sheetContext).pop();
-                    await Share.share(_shareMessage, subject: 'PDF Studio');
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        text: _shareMessage,
+                        subject: 'PDF Studio',
+                      ),
+                    );
                   },
                 ),
                 ListTile(
@@ -417,8 +392,6 @@ class _StorageCard extends StatelessWidget {
     required this.icon,
     required this.accent,
     required this.title,
-    this.customSummary,
-    this.availableValue,
     this.showUsedValue = true,
   });
 
@@ -426,8 +399,6 @@ class _StorageCard extends StatelessWidget {
   final IconData icon;
   final Color accent;
   final String title;
-  final String? customSummary;
-  final String? availableValue;
   final bool showUsedValue;
 
   @override
@@ -436,10 +407,9 @@ class _StorageCard extends StatelessWidget {
     final usedStorage = formatFileSize(info.usedBytes);
     final availableStorage = formatFileSize(info.availableBytes);
     final totalStorage = formatFileSize(info.totalBytes);
-    final summary = customSummary ??
-        (info.isAvailable
-            ? '$usedStorage / $totalStorage'
-            : 'Not available');
+    final summary = info.isAvailable
+        ? '$usedStorage / $totalStorage'
+        : 'Not available';
     final progress = info.isAvailable ? info.usedFraction : 0.0;
 
     return Container(
@@ -519,7 +489,7 @@ class _StorageCard extends StatelessWidget {
                 ),
               if (showUsedValue) const Spacer(),
               Text(
-                'Available: ${availableValue ?? availableStorage}',
+                'Available: $availableStorage',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: context.secondaryText,
@@ -664,9 +634,6 @@ class _InfoPage extends StatelessWidget {
     );
   }
 }
-
-const String _privacyText =
-    'PDF Studio is designed to work offline-first. Your files stay on your device unless you explicitly share or export them. We do not require account signup for core usage, and the app avoids unnecessary data collection.';
 
 const String _aboutText =
     'PDF Studio is a high-performance, offline-first document toolkit designed for speed and privacy. We believe that your documents should stay on your device, which is why all our tools—from scanning to PDF conversion—work completely locally without any cloud dependency.\n\nOur mission is to provide a clutter-free, professional experience for managing your digital paperwork without the weight of unnecessary features or data tracking.';
