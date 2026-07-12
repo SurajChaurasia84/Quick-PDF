@@ -207,10 +207,12 @@ class FileActionHelper {
       return;
     }
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Shared from PDF Studio',
-      subject: file.name,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Shared from PDF Studio',
+        subject: file.name,
+      ),
     );
   }
 }
