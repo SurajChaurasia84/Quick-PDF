@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "PDF Studio" "\0"
+            VALUE "CompanyName", "com.docs" "\0"
+            VALUE "FileDescription", "Quick PDF" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "PDF Studio" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "pdf_studio.exe" "\0"
-            VALUE "ProductName", "PDF Studio" "\0"
+            VALUE "InternalName", "Quick PDF" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.docs. All rights reserved." "\0"
+            VALUE "OriginalFilename", "quick_pdf.exe" "\0"
+            VALUE "ProductName", "Quick PDF" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
