@@ -33,33 +33,29 @@ class FileService {
       return;
     }
 
-    if (await Permission.manageExternalStorage.isGranted) {
-      return;
-    }
-
-    final allFilesStatus = await Permission.manageExternalStorage.request();
-    if (allFilesStatus.isGranted) {
-      return;
-    }
-
-    final fallbackStatuses = await <Permission>[
+    final statuses = await <Permission>[
       Permission.storage,
       Permission.photos,
       Permission.videos,
       Permission.audio,
     ].request();
 
-    final mediaAccessGranted = fallbackStatuses.values.any(
+    final accessGranted = statuses.values.any(
       (status) => status.isGranted || status.isLimited,
     );
-    if (mediaAccessGranted) {
+    if (accessGranted) {
       return;
     }
 
-    if (allFilesStatus.isPermanentlyDenied) {
+    final isStoragePermanentlyDenied =
+        statuses[Permission.storage]?.isPermanentlyDenied ?? false;
+    final isPhotosPermanentlyDenied =
+        statuses[Permission.photos]?.isPermanentlyDenied ?? false;
+
+    if (isStoragePermanentlyDenied || isPhotosPermanentlyDenied) {
       await openAppSettings();
       throw const FileSystemException(
-        'All files access is required. Enable it from App Settings.',
+        'Storage access is required. Enable it from App Settings.',
       );
     }
 
