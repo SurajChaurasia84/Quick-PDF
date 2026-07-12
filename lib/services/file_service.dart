@@ -134,7 +134,7 @@ class FileService {
               imageQuality: 100,
               requestFullMetadata: false,
             );
-            photos = <XFile>[if (single != null) single];
+            photos = <XFile>[?single];
           }
         } else {
           final single = await _imagePicker.pickImage(
@@ -142,7 +142,7 @@ class FileService {
             imageQuality: 100,
             requestFullMetadata: false,
           );
-          photos = <XFile>[if (single != null) single];
+          photos = <XFile>[?single];
         }
 
         return photos.map((file) => file.path).toList();
@@ -286,17 +286,4 @@ class FileService {
     return renamed.path;
   }
 
-  bool _isIgnoredPath(String normalizedPath) {
-    final ignoredSegments = <String>[
-      '${Platform.pathSeparator}.',
-      '${Platform.pathSeparator}.trash${Platform.pathSeparator}',
-      '${Platform.pathSeparator}trash${Platform.pathSeparator}',
-      '${Platform.pathSeparator}deleted${Platform.pathSeparator}',
-      '${Platform.pathSeparator}.deleted${Platform.pathSeparator}',
-      '${Platform.pathSeparator}recycle bin${Platform.pathSeparator}',
-      '${Platform.pathSeparator}.recycle${Platform.pathSeparator}',
-    ];
-
-    return ignoredSegments.any((segment) => normalizedPath.contains(segment));
-  }
 }
