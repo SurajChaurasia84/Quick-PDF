@@ -17,9 +17,14 @@ import 'photo_preview_screen.dart';
 enum CreationFilter {
   all('All'),
   merged('Merged'),
-  compressed('Compressed'),
-  imagePdf('Image PDF'),
   split('Split'),
+  compressed('Compressed'),
+  wordToPdf('Word to PDF'),
+  imagePdf('Image PDF'),
+  protected('Protected'),
+  numbered('Numbered'),
+  signed('Signed'),
+  edited('Edited'),
   exported('PDF Images');
 
   const CreationFilter(this.label);
@@ -339,14 +344,22 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
         return List<AppFile>.from(files);
       case CreationFilter.merged:
         return files.where((file) => _creationKeyFor(file) == 'merged').toList();
-      case CreationFilter.compressed:
-        return files
-            .where((file) => _creationKeyFor(file) == 'compressed')
-            .toList();
-      case CreationFilter.imagePdf:
-        return files.where(_isImagePdf).toList();
       case CreationFilter.split:
         return files.where((file) => _creationKeyFor(file) == 'split').toList();
+      case CreationFilter.compressed:
+        return files.where((file) => _creationKeyFor(file) == 'compressed').toList();
+      case CreationFilter.wordToPdf:
+        return files.where((file) => _creationKeyFor(file) == 'word_to_pdf').toList();
+      case CreationFilter.imagePdf:
+        return files.where(_isImagePdf).toList();
+      case CreationFilter.protected:
+        return files.where((file) => _creationKeyFor(file) == 'protected').toList();
+      case CreationFilter.numbered:
+        return files.where((file) => _creationKeyFor(file) == 'numbered').toList();
+      case CreationFilter.signed:
+        return files.where((file) => _creationKeyFor(file) == 'signed').toList();
+      case CreationFilter.edited:
+        return files.where((file) => _creationKeyFor(file) == 'edited').toList();
       case CreationFilter.exported:
         return files.where((file) => _creationKeyFor(file) == 'images').toList();
     }
@@ -388,22 +401,30 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
 
   String _categoryLabelFor(AppFile file) {
     final key = _creationKeyFor(file);
-    if (key == 'merged') {
-      return 'Merged';
+    switch (key) {
+      case 'merged':
+        return 'Merged';
+      case 'split':
+        return 'Split';
+      case 'compressed':
+        return 'Compressed';
+      case 'word_to_pdf':
+        return 'Word to PDF';
+      case 'scanner':
+        return 'Image to PDF';
+      case 'protected':
+        return 'Protected';
+      case 'numbered':
+        return 'Numbered';
+      case 'signed':
+        return 'Signed';
+      case 'edited':
+        return 'Edited';
+      case 'images':
+        return 'PDF Images';
+      default:
+        return 'Created';
     }
-    if (key == 'compressed') {
-      return 'Compressed';
-    }
-    if (key == 'split') {
-      return 'Split';
-    }
-    if (key == 'images') {
-      return 'PDF Images';
-    }
-    if (_isImagePdf(file)) {
-      return 'Image to PDF';
-    }
-    return 'Created';
   }
 }
 
