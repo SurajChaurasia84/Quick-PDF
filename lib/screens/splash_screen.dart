@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
               FadeTransition(
                 opacity: _controller,
                 child: const Text(
-                  'PDF Studio',
+                  'Quick PDF',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,

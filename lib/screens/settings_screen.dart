@@ -23,9 +23,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   static const String _playStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.example.pdf_studio';
+      'https://play.google.com/store/apps/details?id=com.docs.quickpdf.app';
   static const String _shareMessage =
-      'Try PDF Studio for fast offline document reading and PDF tools.\n\n$_playStoreUrl';
+      'Try Quick PDF for fast offline document reading and PDF tools.\n\n$_playStoreUrl';
   static const String _privacyUrl = 'https://www.example.com/privacy-policy';
 
   late final StorageInfoService _storageInfoService = StorageInfoService();
@@ -255,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             _AppInfoTile(
                               label: 'App Name',
-                              value: snapshot.data?.appName ?? 'PDF Studio',
+                              value: snapshot.data?.appName ?? 'Quick PDF',
                             ),
                             _AppInfoTile(
                               label: 'Version',
@@ -291,9 +291,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _contactSupport(BuildContext context) async {
     final uri = Uri(
       scheme: 'mailto',
-      path: 'pdfstudio9@gmail.com',
+      path: 'contact.appsinfo@gmail.com',
       queryParameters: <String, String>{
-        'subject': 'PDF Studio Support',
+        'subject': 'Quick PDF Support',
       },
     );
 
@@ -310,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No email app found. Contact: pdfstudio9@gmail.com ($e)'),
+          content: Text('No email app found. Contact: contact.appsinfo@gmail.com ($e)'),
         ),
       );
     }
@@ -344,7 +344,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     await SharePlus.instance.share(
                       ShareParams(
                         text: _shareMessage,
-                        subject: 'PDF Studio',
+                        subject: 'Quick PDF',
                       ),
                     );
                   },
@@ -636,5 +636,5 @@ class _InfoPage extends StatelessWidget {
 }
 
 const String _aboutText =
-    'PDF Studio is a high-performance, offline-first document toolkit designed for speed and privacy. We believe that your documents should stay on your device, which is why all our tools—from scanning to PDF conversion—work completely locally without any cloud dependency.\n\nOur mission is to provide a clutter-free, professional experience for managing your digital paperwork without the weight of unnecessary features or data tracking.';
+    'Quick PDF is a high-performance, offline-first document toolkit designed for speed and privacy. We believe that your documents should stay on your device, which is why all our tools—from scanning to PDF conversion—work completely locally without any cloud dependency.\n\nOur mission is to provide a clutter-free, professional experience for managing your digital paperwork without the weight of unnecessary features or data tracking.';
 
