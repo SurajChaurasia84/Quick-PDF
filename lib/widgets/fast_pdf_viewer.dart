@@ -91,6 +91,7 @@ class _FastPdfViewerState extends State<FastPdfViewer> {
           child: ListView.builder(
             itemCount: pageCount,
             padding: EdgeInsets.symmetric(vertical: widget.padding),
+            // ignore: deprecated_member_use
             cacheExtent: 3000, // Pre-load pages for smoother scrolling
             itemBuilder: (context, index) {
               return _PdfPageItem(
