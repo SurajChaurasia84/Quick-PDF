@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.pdf_studio"
+    namespace = "com.docs.quickpdf.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.pdf_studio"
+        applicationId = "com.docs.quickpdf.app"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
