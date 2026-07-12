@@ -10,7 +10,6 @@ import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
-import '../utils/file_action_helper.dart';
 import '../widgets/file_action_menu.dart';
 import 'document_viewer_screen.dart';
 import 'photo_preview_screen.dart';
@@ -247,10 +246,12 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
       return;
     }
 
-    await Share.shareXFiles(
-      <XFile>[XFile(file.path)],
-      text: 'Shared from PDF Studio',
-      subject: file.name,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(file.path)],
+        text: 'Shared from PDF Studio',
+        subject: file.name,
+      ),
     );
   }
 
