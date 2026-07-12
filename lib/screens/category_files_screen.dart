@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../models/app_file.dart';
 import '../services/app_controller.dart';
-import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
 import '../widgets/recent_file_card.dart';
 import 'document_viewer_screen.dart';
@@ -227,10 +226,12 @@ class _CategoryFilesScreenState extends State<CategoryFilesScreen> {
                               }
                               return;
                             }
-                            await Share.shareXFiles(
-                              <XFile>[XFile(file.path)],
-                              text: 'Shared from PDF Studio',
-                              subject: file.name,
+                            await SharePlus.instance.share(
+                              ShareParams(
+                                files: <XFile>[XFile(file.path)],
+                                text: 'Shared from PDF Studio',
+                                subject: file.name,
+                              ),
                             );
                           },
                           onSave: () async {
