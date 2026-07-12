@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../models/app_file.dart';
 import '../services/app_controller.dart';
-import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
 import '../widgets/fixed_top_header.dart';
 import '../widgets/recent_file_card.dart';
@@ -257,15 +256,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  List<AppFile> _dedupeFiles(List<AppFile> files) {
-    final map = <String, AppFile>{};
-    for (final file in files) {
-      map[file.path] = file;
-    }
-    final values = map.values.toList()
-      ..sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
-    return values;
-  }
 
   List<AppFile> _filterFiles(List<AppFile> files, String query) {
     if (query.isEmpty) {
@@ -308,10 +298,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    await Share.shareXFiles(
-      <XFile>[XFile(file.path)],
-      text: 'Shared from PDF Studio',
-      subject: file.name,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(file.path)],
+        text: 'Shared from PDF Studio',
+        subject: file.name,
+      ),
     );
   }
 
