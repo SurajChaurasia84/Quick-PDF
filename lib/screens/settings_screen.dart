@@ -59,14 +59,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _openAboutPage(BuildContext context) async {
-    _openInfoPage(
-      context,
-      title: 'About us',
-      content: _aboutText,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<AppController>();
@@ -212,11 +204,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () => _openPrivacyPage(context),
                     ),
                     _MoreMenuTile(
-                      icon: Icons.info_outline_rounded,
-                      title: 'About us',
-                      onTap: () => _openAboutPage(context),
-                    ),
-                    _MoreMenuTile(
                       icon: Icons.help_outline_rounded,
                       title: 'Help / Contact',
                       onTap: () => _contactSupport(context),
@@ -230,61 +217,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
-              const SizedBox(height: 20),
-              GlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'App Info',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    FutureBuilder<PackageInfo>(
-                      future: _packageInfoFuture,
-                      builder: (context, snapshot) {
-                        final version = snapshot.data?.version ?? '--';
-                        final buildNumber = snapshot.data?.buildNumber ?? '';
-                        final fullVersion = buildNumber.isNotEmpty 
-                            ? '$version ($buildNumber)' 
-                            : version;
-                        
-                        return Column(
-                          children: [
-                            _AppInfoTile(
-                              label: 'App Name',
-                              value: snapshot.data?.appName ?? 'Quick PDF',
+              const SizedBox(height: 32),
+              FutureBuilder<PackageInfo>(
+                future: _packageInfoFuture,
+                builder: (context, snapshot) {
+                  final appName = snapshot.data?.appName ?? 'Quick PDF';
+                  final version = snapshot.data?.version ?? '1.0.0';
+                  final buildNumber = snapshot.data?.buildNumber ?? '';
+                  final fullVersion = buildNumber.isNotEmpty
+                      ? '$version ($buildNumber)'
+                      : version;
+
+                  return Column(
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            appName,
+                            style: TextStyle(
+                              color: context.primaryText,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
-                            _AppInfoTile(
-                              label: 'Version',
-                              value: fullVersion,
-                              showDivider: false,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'v$fullVersion',
+                            style: TextStyle(
+                              color: context.secondaryText,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Copyright © 2026 com.docs. All rights reserved.',
+                        style: TextStyle(
+                          color: context.secondaryText.withValues(alpha: 0.7),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  void _openInfoPage(
-    BuildContext context, {
-    required String title,
-    required String content,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _InfoPage(title: title, content: content),
-      ),
     );
   }
 
@@ -336,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(color: context.primaryText),
                   ),
                   subtitle: Text(
-                    'Choose an app to send text and Play Store link',
+                    'Choose an app to share app link',
                     style: TextStyle(color: context.secondaryText),
                   ),
                   onTap: () async {
@@ -359,7 +343,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(color: context.primaryText),
                   ),
                   subtitle: Text(
-                    'Copy Play Store link to clipboard',
+                    'Copy app link to clipboard',
                     style: TextStyle(color: context.secondaryText),
                   ),
                   onTap: () async {
@@ -372,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Navigator.of(sheetContext).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Play Store link copied'),
+                        content: Text('App link copied'),
                       ),
                     );
                   },
@@ -559,82 +543,5 @@ class _MoreMenuTile extends StatelessWidget {
   }
 }
 
-class _AppInfoTile extends StatelessWidget {
-  const _AppInfoTile({
-    required this.label,
-    required this.value,
-    this.showDivider = true,
-  });
 
-  final String label;
-  final String value;
-  final bool showDivider;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: context.primaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  color: context.secondaryText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (showDivider)
-          Divider(
-            height: 1,
-            color: context.borderColor,
-          ),
-      ],
-    );
-  }
-}
-
-
-class _InfoPage extends StatelessWidget {
-  const _InfoPage({required this.title, required this.content});
-
-  final String title;
-  final String content;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          content,
-          style: TextStyle(
-            color: context.primaryText,
-            fontSize: 14,
-            height: 1.6,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-const String _aboutText =
-    'Quick PDF is a high-performance, offline-first document toolkit designed for speed and privacy. We believe that your documents should stay on your device, which is why all our tools—from scanning to PDF conversion—work completely locally without any cloud dependency.\n\nOur mission is to provide a clutter-free, professional experience for managing your digital paperwork without the weight of unnecessary features or data tracking.';
 
