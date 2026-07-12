@@ -89,6 +89,69 @@ class _MyFilesScreenState extends State<MyFilesScreen> {
                 backgroundColor: Colors.transparent,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2D87F3)),
               ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HeaderRow(
+                    isGridView: _isGridView,
+                    isSearchActive: _showSearch,
+                    onSearchTap: _toggleSearch,
+                    onViewTap: () {
+                      setState(() {
+                        _isGridView = !_isGridView;
+                      });
+                    },
+                  ),
+                  if (_showSearch) ...<Widget>[
+                    const SizedBox(height: 14),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.searchBackground,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: context.borderColor),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        onChanged: (value) {
+                          setState(() {
+                            _query = value.trim().toLowerCase();
+                          });
+                        },
+                        style: TextStyle(color: context.primaryText),
+                        decoration: InputDecoration(
+                          hintText: 'Search files...',
+                          hintStyle: TextStyle(color: context.secondaryText),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: context.secondaryText,
+                          ),
+                          suffixIcon: _query.isEmpty
+                              ? null
+                              : IconButton(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _searchFocusNode.unfocus();
+                                    setState(() {
+                                      _query = '';
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.close_rounded,
+                                    color: context.secondaryText,
+                                  ),
+                                ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => controller.refreshAll(forceFullScan: true),
@@ -103,74 +166,6 @@ class _MyFilesScreenState extends State<MyFilesScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _HeaderRow(
-                              isGridView: _isGridView,
-                              isSearchActive: _showSearch,
-                              onSearchTap: _toggleSearch,
-                              onViewTap: () {
-                                setState(() {
-                                  _isGridView = !_isGridView;
-                                });
-                              },
-                            ),
-                            if (_showSearch) ...<Widget>[
-                              const SizedBox(height: 14),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: context.searchBackground,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border:
-                                      Border.all(color: context.borderColor),
-                                ),
-                                child: TextField(
-                                  controller: _searchController,
-                                  focusNode: _searchFocusNode,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _query = value.trim().toLowerCase();
-                                    });
-                                  },
-                                  style: TextStyle(color: context.primaryText),
-                                  decoration: InputDecoration(
-                                    hintText: 'Search files...',
-                                    hintStyle: TextStyle(
-                                        color: context.secondaryText),
-                                    prefixIcon: Icon(
-                                      Icons.search_rounded,
-                                      color: context.secondaryText,
-                                    ),
-                                    suffixIcon: _query.isEmpty
-                                        ? null
-                                        : IconButton(
-                                            onPressed: () {
-                                              _searchController.clear();
-                                              _searchFocusNode.unfocus();
-                                              setState(() {
-                                                _query = '';
-                                              });
-                                            },
-                                            icon: Icon(
-                                              Icons.close_rounded,
-                                              color: context.secondaryText,
-                                            ),
-                                          ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 4),
-                            Text(
-                              'All your documents in one place',
-                              style: TextStyle(
-                                color: context.secondaryText,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
                             _SourceTabs(
                               current: _source,
                               onChanged: (value) {
@@ -838,10 +833,7 @@ class _MyFileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     _MyFileMetaPart(
-                      futureLabel: _FilePageCountLabel.labelFor(file),
-                      fallbackLabel: _FilePageCountLabel.fallbackFor(file),
-                      size: file.size,
-                      modifiedAt: file.modifiedAt,
+                      file: file,
                       style: TextStyle(
                         color: context.secondaryText,
                         fontSize: 12,
@@ -961,10 +953,7 @@ class _MyFileGridCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               _MyFileMetaPart(
-                futureLabel: _FilePageCountLabel.labelFor(file),
-                fallbackLabel: _FilePageCountLabel.fallbackFor(file),
-                size: file.size,
-                modifiedAt: file.modifiedAt,
+                file: file,
                 style: TextStyle(
                   color: context.secondaryText,
                   fontSize: 11,
@@ -981,26 +970,30 @@ class _MyFileGridCard extends StatelessWidget {
 
 class _MyFileMetaPart extends StatelessWidget {
   const _MyFileMetaPart({
-    required this.futureLabel,
-    required this.fallbackLabel,
-    required this.size,
-    required this.modifiedAt,
+    required this.file,
     required this.style,
   });
 
-  final Future<String> futureLabel;
-  final String fallbackLabel;
-  final int size;
-  final DateTime modifiedAt;
+  final AppFile file;
   final TextStyle style;
 
   @override
   Widget build(BuildContext context) {
+    if (!file.isPdf) {
+      return Text(
+        '${formatFileSize(file.size)}  •  ${formatDate(file.modifiedAt)}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: style,
+      );
+    }
+
     return FutureBuilder<String>(
-      future: futureLabel,
+      future: _FilePageCountLabel.labelFor(file),
       builder: (context, snapshot) {
+        final label = snapshot.data ?? _FilePageCountLabel.fallbackFor(file);
         return Text(
-          '${snapshot.data ?? fallbackLabel}  •  ${formatFileSize(size)}  •  ${formatDate(modifiedAt)}',
+          '$label  •  ${formatFileSize(file.size)}  •  ${formatDate(file.modifiedAt)}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: style,
