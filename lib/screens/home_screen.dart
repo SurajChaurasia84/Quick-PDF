@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: <Widget>[
         FixedTopHeader(
-          title: 'PDF Studio',
+          title: 'Quick PDF',
           trailing: IgnorePointer(
             ignoring: !_searchCollapsed,
             child: AnimatedOpacity(
@@ -301,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await SharePlus.instance.share(
       ShareParams(
         files: <XFile>[XFile(file.path)],
-        text: 'Shared from PDF Studio',
+        text: 'Shared from Quick PDF',
         subject: file.name,
       ),
     );
