@@ -156,7 +156,7 @@ class FileService {
     return pickImageFiles(allowMultiple: allowMultiple);
   }
 
-  static const _channel = MethodChannel('pdf_studio/storage_info');
+  static const _channel = MethodChannel('quick_pdf/storage_info');
 
   Future<List<AppFile>> fetchMediaStoreDocuments({
     Set<String> favorites = const <String>{},
@@ -213,10 +213,10 @@ class FileService {
 
     Directory targetDirectory;
     if (Platform.isAndroid) {
-      targetDirectory = Directory('/storage/emulated/0/PDF Studio');
+      targetDirectory = Directory('/storage/emulated/0/Quick PDF');
     } else {
       final root = await getApplicationDocumentsDirectory();
-      targetDirectory = Directory(p.join(root.path, 'PDF Studio'));
+      targetDirectory = Directory(p.join(root.path, 'Quick PDF'));
     }
 
     if (!await targetDirectory.exists()) {

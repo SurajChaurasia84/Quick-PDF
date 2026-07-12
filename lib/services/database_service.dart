@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/app_file.dart';
 
 class DatabaseService {
-  static const _dbName = 'pdf_studio.db';
+  static const _dbName = 'quick_pdf.db';
   static const _tableRecent = 'recent_files';
   static const _tableScanned = 'scanned_files';
 

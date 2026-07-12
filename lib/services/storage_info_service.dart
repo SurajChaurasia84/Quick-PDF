@@ -5,7 +5,7 @@ import '../models/storage_overview.dart';
 
 class StorageInfoService {
   static const MethodChannel _channel = MethodChannel(
-    'pdf_studio/storage_info',
+    'quick_pdf/storage_info',
   );
 
   Future<StorageOverview?> getStorageOverview() async {
