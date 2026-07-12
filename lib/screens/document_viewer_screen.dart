@@ -29,8 +29,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   final TextEditingController _findController = TextEditingController();
   final FocusNode _findFocusNode = FocusNode();
   final PdfViewerController _pdfViewerController = PdfViewerController();
-  
-  double _zoomScale = 1;
   bool _isFindMode = false;
   bool _isSearching = false;
   String _searchQuery = '';
@@ -51,11 +49,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   late final Future<String?> _officeContentFuture;
   late final Future<SpreadsheetPreviewData?> _spreadsheetPreviewFuture;
   late final Future<PresentationPreviewData?> _presentationPreviewFuture;
-  bool _isPreparingPdf = false;
 
-  bool get _isPaperLikeFile =>
-      widget.file.isText ||
-      <String>['doc', 'docx'].contains(widget.file.extension.toLowerCase());
   bool _pdfNeedsPassword = false;
   bool _isPasswordPromptOpen = false;
   String? _pdfPassword;
@@ -115,7 +109,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     setState(() {
       _totalPages = details.document.pages.count;
       _totalPdfHeight = totalHeight;
-      _isPreparingPdf = false;
     });
 
     // Start polling for scroll updates since SfPdfViewer has no onScrollChanged
@@ -184,7 +177,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final usePdfChrome = _currentFile.isPdf && _fileExists;
-    final isPaperLike = _isPaperLikeFile;
     final pdfBackground = context.isDarkMode ? Colors.black : Colors.white;
     final pdfForeground =
         context.isDarkMode ? Colors.white : const Color(0xFF111827);
@@ -662,7 +654,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       return;
     }
     setState(() {
-      _isPreparingPdf = true;
       _pdfOpenError = null;
       _pdfNeedsPassword = false;
       _pdfPassword = password;
@@ -785,10 +776,12 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     if (!_fileExists) {
       return;
     }
-    await Share.shareXFiles(
-      <XFile>[XFile(_currentFile.path)],
-      subject: _currentFile.name,
-      text: 'Shared from PDF Studio',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(_currentFile.path)],
+        subject: _currentFile.name,
+        text: 'Shared from PDF Studio',
+      ),
     );
   }
 
