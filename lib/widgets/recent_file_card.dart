@@ -148,7 +148,7 @@ class RecentFileCard extends StatelessWidget {
 }
 
 class RecentFileMetaText extends StatelessWidget {
-  const RecentFileMetaText({required this.file, required this.textStyle});
+  const RecentFileMetaText({super.key, required this.file, required this.textStyle});
 
   final AppFile file;
   final TextStyle textStyle;
