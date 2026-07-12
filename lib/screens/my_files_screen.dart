@@ -1117,7 +1117,7 @@ class _ImportSheet extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Choose how to add files to PDF Studio',
+                'Choose how to add files to Quick PDF',
                 style: TextStyle(
                   color: context.secondaryText,
                   fontSize: 13,

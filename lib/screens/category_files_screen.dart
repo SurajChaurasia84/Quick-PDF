@@ -229,7 +229,7 @@ class _CategoryFilesScreenState extends State<CategoryFilesScreen> {
                             await SharePlus.instance.share(
                               ShareParams(
                                 files: <XFile>[XFile(file.path)],
-                                text: 'Shared from PDF Studio',
+                                text: 'Shared from Quick PDF',
                                 subject: file.name,
                               ),
                             );

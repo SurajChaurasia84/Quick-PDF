@@ -119,7 +119,7 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
               children: <Widget>[
                 Text(
-                  'Files you created inside PDF Studio',
+                  'Files you created inside Quick PDF',
                   style: TextStyle(
                     color: context.secondaryText,
                     fontSize: 13,
@@ -249,7 +249,7 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
     await SharePlus.instance.share(
       ShareParams(
         files: <XFile>[XFile(file.path)],
-        text: 'Shared from PDF Studio',
+        text: 'Shared from Quick PDF',
         subject: file.name,
       ),
     );
