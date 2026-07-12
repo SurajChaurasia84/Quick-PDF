@@ -80,11 +80,8 @@ class _SplitPdfScreenState extends State<SplitPdfScreen> {
             child: ReorderableListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               itemCount: _pageNumbers.length,
-              onReorder: (oldIndex, newIndex) {
+              onReorderItem: (oldIndex, newIndex) {
                 setState(() {
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
                   final item = _pageNumbers.removeAt(oldIndex);
                   _pageNumbers.insert(newIndex, item);
                 });
