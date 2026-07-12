@@ -38,15 +38,6 @@ class ShellScreen extends StatelessWidget {
             children: screens,
           ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const ScannerScreen()),
-            );
-          },
-          icon: const Icon(Icons.document_scanner),
-          label: const Text('Scan'),
-        ),
         bottomNavigationBar: Container(
           color: context.panelBackground,
           padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
@@ -70,6 +61,19 @@ class ShellScreen extends StatelessWidget {
                     label: 'Tools',
                     selected: controller.currentIndex == 1,
                     onTap: () => controller.updateNavigation(1),
+                  ),
+                ),
+                Expanded(
+                  child: _BottomTabItem(
+                    icon: Icons.document_scanner_outlined,
+                    selectedIcon: Icons.document_scanner_rounded,
+                    label: 'Scan',
+                    selected: false,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const ScannerScreen()),
+                      );
+                    },
                   ),
                 ),
                 Expanded(
