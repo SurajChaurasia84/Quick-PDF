@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                       borderRadius: BorderRadius.circular(24),
                     ),
                     padding: const EdgeInsets.all(18),
-                    child: Image.asset('assets/splash.png', fit: BoxFit.contain),
+                    child: Image.asset('assets/icon.png', fit: BoxFit.contain),
                   ),
                 ),
               ),
