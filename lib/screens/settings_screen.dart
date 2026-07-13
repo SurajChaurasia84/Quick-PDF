@@ -205,7 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     _MoreMenuTile(
                       icon: Icons.help_outline_rounded,
-                      title: 'Help / Contact',
+                      title: 'Help & Support',
                       onTap: () => _contactSupport(context),
                     ),
                     _MoreMenuTile(
@@ -254,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Copyright © 2026 com.docs. All rights reserved.',
+                        '© 2026. All rights reserved.',
                         style: TextStyle(
                           color: context.secondaryText.withValues(alpha: 0.7),
                           fontSize: 11,
