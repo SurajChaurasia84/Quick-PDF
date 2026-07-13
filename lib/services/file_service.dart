@@ -33,30 +33,50 @@ class FileService {
       return;
     }
 
-    final statuses = await <Permission>[
-      Permission.storage,
-      Permission.photos,
-      Permission.videos,
-      Permission.audio,
-    ].request();
+    int sdkInt = 33;
+    try {
+      final int? version = await _channel.invokeMethod<int>('getAndroidSdkInt');
+      if (version != null) {
+        sdkInt = version;
+      }
+    } catch (_) {}
 
-    final accessGranted = statuses.values.any(
-      (status) => status.isGranted || status.isLimited,
-    );
-    if (accessGranted) {
-      return;
-    }
+    if (sdkInt >= 30) {
+      if (await Permission.manageExternalStorage.isGranted) {
+        return;
+      }
+      final status = await Permission.manageExternalStorage.request();
+      if (status.isGranted) {
+        return;
+      }
 
-    final isStoragePermanentlyDenied =
-        statuses[Permission.storage]?.isPermanentlyDenied ?? false;
-    final isPhotosPermanentlyDenied =
-        statuses[Permission.photos]?.isPermanentlyDenied ?? false;
+      // Fallback request photos/images for scanning/photo library if they deny manageExternalStorage
+      final photosStatus = await Permission.photos.request();
+      if (photosStatus.isGranted || photosStatus.isLimited) {
+        return;
+      }
 
-    if (isStoragePermanentlyDenied || isPhotosPermanentlyDenied) {
-      await openAppSettings();
-      throw const FileSystemException(
-        'Storage access is required. Enable it from App Settings.',
-      );
+      if (status.isPermanentlyDenied) {
+        await openAppSettings();
+        throw const FileSystemException(
+          'All files access is required to scan documents. Enable it from App Settings.',
+        );
+      }
+    } else {
+      if (await Permission.storage.isGranted) {
+        return;
+      }
+      final status = await Permission.storage.request();
+      if (status.isGranted) {
+        return;
+      }
+
+      if (status.isPermanentlyDenied) {
+        await openAppSettings();
+        throw const FileSystemException(
+          'Storage access is required. Enable it from App Settings.',
+        );
+      }
     }
 
     throw const FileSystemException('Storage permission denied.');
