@@ -46,6 +46,9 @@ class MainActivity : FlutterActivity() {
                             }
                         }
                     }
+                    "getAndroidSdkInt" -> {
+                        result.success(Build.VERSION.SDK_INT)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -97,8 +100,12 @@ class MainActivity : FlutterActivity() {
                 // Skip hidden files and trash/recycle folders
                 if (name.startsWith(".") || isTrashPath(path)) continue
 
-                val file = File(path)
-                if (!file.exists() || !file.isFile) continue
+                // On Android 11+ (API 30+), direct file exists check via File API returns false for shared files
+                // unless MANAGE_EXTERNAL_STORAGE is granted, so we skip it to allow MediaStore files listing.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    val file = File(path)
+                    if (!file.exists() || !file.isFile) continue
+                }
 
                 val extension = path.substringAfterLast('.', "").lowercase()
                 val supported = arrayOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "rtf")
