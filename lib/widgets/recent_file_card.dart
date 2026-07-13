@@ -158,10 +158,19 @@ class RecentFileMetaText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!file.isPdf) {
+      return Text(
+        '${formatFileSize(file.size)}  •  ${formatDate(file.modifiedAt)}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: textStyle,
+      );
+    }
+
     return FutureBuilder<String>(
       future: _pageCountCache.putIfAbsent(file.path, () => _pageCountLabel(file)),
       builder: (context, snapshot) {
-        final pageLabel = snapshot.data ?? _fallbackPageLabel(file);
+        final pageLabel = snapshot.data ?? '1 page';
         return Text(
           '$pageLabel  •  ${formatFileSize(file.size)}  •  ${formatDate(file.modifiedAt)}',
           maxLines: 1,
