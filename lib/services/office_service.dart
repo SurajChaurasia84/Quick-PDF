@@ -247,6 +247,10 @@ class OfficeService {
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
+    if (slideFiles.isEmpty) {
+      throw Exception('No slides found in this PowerPoint file.');
+    }
+
     final slides = <String>[];
     for (var i = 0; i < slideFiles.length; i++) {
       final xml = XmlDocument.parse(
@@ -259,11 +263,9 @@ class OfficeService {
           .toList();
       if (texts.isNotEmpty) {
         slides.add('Slide ${i + 1}\n${texts.join('\n')}');
+      } else {
+        slides.add('Slide ${i + 1}\n[Empty Slide]');
       }
-    }
-
-    if (slides.isEmpty) {
-      throw Exception('No readable text found in this PowerPoint file.');
     }
 
     return slides.join('\n\n');
@@ -291,6 +293,10 @@ class OfficeService {
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
+    if (slideFiles.isEmpty) {
+      throw Exception('No slides found in this PowerPoint file.');
+    }
+
     final slides = <PresentationSlideData>[];
     for (var i = 0; i < slideFiles.length; i++) {
       final xml = XmlDocument.parse(
@@ -308,11 +314,14 @@ class OfficeService {
             bullets: texts.length > 1 ? texts.sublist(1) : const <String>[],
           ),
         );
+      } else {
+        slides.add(
+          PresentationSlideData(
+            title: 'Slide ${i + 1}',
+            bullets: const <String>[],
+          ),
+        );
       }
-    }
-
-    if (slides.isEmpty) {
-      throw Exception('No readable text found in this PowerPoint file.');
     }
 
     return PresentationPreviewData(slides: slides);
