@@ -81,9 +81,24 @@ class AppController extends ChangeNotifier {
     final cachedFiles = await databaseService.getAllScannedFiles();
     final favorites = await storageService.getFavorites();
     
-    internalFiles = cachedFiles
+    final overview = await storageInfoService.getStorageOverview();
+    final sdCardPath = overview?.sdCardStorage?.path;
+    final sdCardAvailable = overview?.sdCardStorage?.isAvailable ?? false;
+
+    isSdCardAvailable = sdCardAvailable;
+
+    final mappedCachedFiles = cachedFiles
         .map((f) => f.copyWith(isFavorite: favorites.contains(f.path)))
         .toList();
+
+    if (sdCardAvailable && sdCardPath != null && sdCardPath.isNotEmpty) {
+      internalFiles = mappedCachedFiles.where((file) => !file.path.startsWith(sdCardPath)).toList();
+      sdCardFiles = mappedCachedFiles.where((file) => file.path.startsWith(sdCardPath)).toList();
+    } else {
+      internalFiles = mappedCachedFiles;
+      sdCardFiles = <AppFile>[];
+    }
+
     _rebuildSecondaryLists(favorites);
     await _syncRecentFiles(favorites);
     
@@ -102,6 +117,7 @@ class AppController extends ChangeNotifier {
     
     if (forceFullScan) {
       internalFiles = <AppFile>[];
+      sdCardFiles = <AppFile>[];
       await databaseService.clearCache();
     }
 
@@ -112,7 +128,19 @@ class AppController extends ChangeNotifier {
       // Rapid Native Scan
       final files = await fileService.fetchMediaStoreDocuments(favorites: favorites);
       
-      internalFiles = files;
+      final overview = await storageInfoService.getStorageOverview();
+      final sdCardPath = overview?.sdCardStorage?.path;
+      final sdCardAvailable = overview?.sdCardStorage?.isAvailable ?? false;
+
+      isSdCardAvailable = sdCardAvailable;
+
+      if (sdCardAvailable && sdCardPath != null && sdCardPath.isNotEmpty) {
+        internalFiles = files.where((file) => !file.path.startsWith(sdCardPath)).toList();
+        sdCardFiles = files.where((file) => file.path.startsWith(sdCardPath)).toList();
+      } else {
+        internalFiles = files;
+        sdCardFiles = <AppFile>[];
+      }
       await databaseService.saveScannedFiles(files);
       
       await storageService.setLastScanTime(DateTime.now());
