@@ -29,6 +29,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   final TextEditingController _findController = TextEditingController();
   final FocusNode _findFocusNode = FocusNode();
   final PdfViewerController _pdfViewerController = PdfViewerController();
+  PdfTextSearchResult? _pdfTextSearchResult;
   bool _isFindMode = false;
   bool _isSearching = false;
   String _searchQuery = '';
@@ -83,6 +84,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
   @override
   void dispose() {
+    _pdfTextSearchResult?.removeListener(_onPdfSearchChanged);
+    _pdfTextSearchResult?.clear();
     _pdfViewerController.dispose();
     _findController.dispose();
     _findFocusNode.dispose();
@@ -521,7 +524,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           }
           return Container(
             color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             child: SizedBox.expand(
               child: _HighlightedDocumentText(
                 text: snapshot.data ?? '',
@@ -572,7 +575,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         );
       }
 
-      if (_currentFile.extension.toLowerCase() == 'pptx' && _searchQuery.isEmpty) {
+      if (_currentFile.extension.toLowerCase() == 'pptx') {
         return FutureBuilder<PresentationPreviewData?>(
           future: _presentationPreviewFuture,
           builder: (context, snapshot) {
@@ -591,6 +594,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             return _PresentationPreview(
               data: preview,
               searchQuery: _searchQuery,
+              initialPage: (_currentPage - 1).clamp(0, preview.slides.length - 1),
             );
           },
         );
@@ -610,7 +614,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
           return Container(
             color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             child: SizedBox.expand(
               child: _HighlightedDocumentText(
                 text: snapshot.data ?? '',
@@ -801,6 +805,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
   void _closeFindMode() {
     _findFocusNode.unfocus();
+    _pdfTextSearchResult?.removeListener(_onPdfSearchChanged);
+    _pdfTextSearchResult?.clear();
+    _pdfTextSearchResult = null;
     setState(() {
       _isFindMode = false;
       _isSearching = false;
@@ -814,6 +821,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   void _clearFindQuery() {
     _findController.clear();
     _findFocusNode.requestFocus();
+    _pdfTextSearchResult?.removeListener(_onPdfSearchChanged);
+    _pdfTextSearchResult?.clear();
+    _pdfTextSearchResult = null;
     setState(() {
       _searchQuery = '';
       _searchMatches = const <_DocumentSearchMatch>[];
@@ -822,8 +832,27 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     });
   }
 
+  void _onPdfSearchChanged() {
+    if (_pdfTextSearchResult != null && mounted) {
+      setState(() {
+        final total = _pdfTextSearchResult!.totalInstanceCount;
+        final current = _pdfTextSearchResult!.currentInstanceIndex;
+        _currentMatchIndex = (current - 1).clamp(0, (total - 1).clamp(0, total));
+        _searchMatches = List.generate(
+          total,
+          (index) => _DocumentSearchMatch(pageNumber: 1, snippet: ''),
+        );
+        _isSearching = false;
+      });
+    }
+  }
+
   Future<void> _onFindQueryChanged(String value) async {
     final query = value.trim();
+    _pdfTextSearchResult?.removeListener(_onPdfSearchChanged);
+    _pdfTextSearchResult?.clear();
+    _pdfTextSearchResult = null;
+
     setState(() {
       _searchQuery = query;
       _isSearching = query.isNotEmpty;
@@ -834,6 +863,12 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     });
 
     if (query.isEmpty) {
+      return;
+    }
+
+    if (_currentFile.isPdf) {
+      _pdfTextSearchResult = _pdfViewerController.searchText(query);
+      _pdfTextSearchResult!.addListener(_onPdfSearchChanged);
       return;
     }
 
@@ -1091,6 +1126,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   bool get _canGoToNextMatch => _searchMatches.length > 1;
 
   Future<void> _goToPreviousMatch() async {
+    if (_currentFile.isPdf) {
+      _pdfTextSearchResult?.previousInstance();
+      return;
+    }
     if (_searchMatches.isEmpty) {
       return;
     }
@@ -1103,6 +1142,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   }
 
   Future<void> _goToNextMatch() async {
+    if (_currentFile.isPdf) {
+      _pdfTextSearchResult?.nextInstance();
+      return;
+    }
     if (_searchMatches.isEmpty) {
       return;
     }
@@ -1116,6 +1159,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   Future<void> _openMatch(_DocumentSearchMatch match) async {
     if (_currentFile.isPdf) {
       _pdfViewerController.jumpToPage(match.pageNumber);
+    } else if (_currentFile.extension.toLowerCase() == 'pptx') {
+      setState(() {
+        _currentPage = match.pageNumber;
+      });
     }
   }
 
@@ -1304,7 +1351,7 @@ class _DocumentSearchMatch {
   final int? excelColIndex;
 }
 
-class _HighlightedDocumentText extends StatelessWidget {
+class _HighlightedDocumentText extends StatefulWidget {
   const _HighlightedDocumentText({
     required this.text,
     required this.query,
@@ -1318,8 +1365,128 @@ class _HighlightedDocumentText extends StatelessWidget {
   final bool forceDarkText;
 
   @override
+  State<_HighlightedDocumentText> createState() => _HighlightedDocumentTextState();
+}
+
+class _HighlightedDocumentTextState extends State<_HighlightedDocumentText> {
+  final GlobalKey _currentMatchKey = GlobalKey();
+
+  @override
+  void didUpdateWidget(_HighlightedDocumentText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentMatchIndex != oldWidget.currentMatchIndex || widget.query != oldWidget.query) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToCurrentMatch();
+      });
+    }
+  }
+
+  void _scrollToCurrentMatch() {
+    final context = _currentMatchKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 300),
+        alignment: 0.3, // Scroll so that the matched paragraph is towards the top-center
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  int _countOccurrences(String source, String query) {
+    if (query.isEmpty) return 0;
+    int count = 0;
+    int index = 0;
+    while (true) {
+      index = source.indexOf(query, index);
+      if (index == -1) break;
+      count++;
+      index += query.length;
+    }
+    return count;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final textColor = forceDarkText ? const Color(0xFF111827) : context.primaryText;
+    final textColor = widget.forceDarkText ? const Color(0xFF111827) : context.primaryText;
+    
+    if (widget.query.trim().isEmpty) {
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: SelectableText(
+          widget.text,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 15,
+            height: 1.6,
+          ),
+        ),
+      );
+    }
+
+    final paragraphs = widget.text.split('\n');
+    final lowerQuery = widget.query.toLowerCase();
+    int matchCounter = 0;
+
+    final List<Widget> children = [];
+    for (int i = 0; i < paragraphs.length; i++) {
+      final paragraph = paragraphs[i];
+      final lowerParagraph = paragraph.toLowerCase();
+      final matchesInParagraph = _countOccurrences(lowerParagraph, lowerQuery);
+      
+      bool containsCurrentMatch = false;
+      if (matchesInParagraph > 0) {
+        if (widget.currentMatchIndex >= matchCounter && widget.currentMatchIndex < matchCounter + matchesInParagraph) {
+          containsCurrentMatch = true;
+        }
+        matchCounter += matchesInParagraph;
+      }
+
+      final key = containsCurrentMatch ? _currentMatchKey : null;
+
+      children.add(
+        Padding(
+          key: key,
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _HighlightedParagraph(
+            text: paragraph,
+            query: widget.query,
+            paragraphMatchStart: matchCounter - matchesInParagraph,
+            currentMatchIndex: widget.currentMatchIndex,
+            textColor: textColor,
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+}
+
+class _HighlightedParagraph extends StatelessWidget {
+  const _HighlightedParagraph({
+    required this.text,
+    required this.query,
+    required this.paragraphMatchStart,
+    required this.currentMatchIndex,
+    required this.textColor,
+  });
+
+  final String text;
+  final String query;
+  final int paragraphMatchStart;
+  final int currentMatchIndex;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
     if (query.trim().isEmpty) {
       return SelectableText(
         text,
@@ -1335,7 +1502,7 @@ class _HighlightedDocumentText extends StatelessWidget {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     var start = 0;
-    var matchIndex = 0;
+    var matchIndex = paragraphMatchStart;
 
     while (true) {
       final index = lowerText.indexOf(lowerQuery, start);
@@ -1740,17 +1907,77 @@ class _SpreadsheetGrid extends StatelessWidget {
   }
 }
 
-class _PresentationPreview extends StatelessWidget {
+class _PresentationPreview extends StatefulWidget {
   const _PresentationPreview({
     required this.data,
     this.searchQuery = '',
+    this.initialPage = 0,
   });
 
   final PresentationPreviewData data;
   final String searchQuery;
+  final int initialPage;
+
+  @override
+  State<_PresentationPreview> createState() => _PresentationPreviewState();
+}
+
+class _PresentationPreviewState extends State<_PresentationPreview> {
+  late final PageController _pageController;
+  late final ScrollController _thumbnailScrollController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialPage;
+    _pageController = PageController(initialPage: widget.initialPage);
+    _thumbnailScrollController = ScrollController();
+  }
+
+  @override
+  void didUpdateWidget(_PresentationPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialPage != oldWidget.initialPage) {
+      _pageController.animateToPage(
+        widget.initialPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _thumbnailScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentPage = page;
+    });
+    if (_thumbnailScrollController.hasClients) {
+      final offset = page * 132.0; // 124px width + 8px spacing
+      _thumbnailScrollController.animateTo(
+        offset.clamp(0.0, _thumbnailScrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _onThumbnailTap(int page) {
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   Widget _buildSlideText(String text, bool isTitle, BuildContext context) {
-    if (searchQuery.trim().isEmpty || !text.toLowerCase().contains(searchQuery.toLowerCase())) {
+    if (widget.searchQuery.trim().isEmpty || !text.toLowerCase().contains(widget.searchQuery.toLowerCase())) {
       return Text(
         text,
         style: TextStyle(
@@ -1764,7 +1991,7 @@ class _PresentationPreview extends StatelessWidget {
 
     final spans = <InlineSpan>[];
     final lowerText = text.toLowerCase();
-    final lowerQuery = searchQuery.toLowerCase();
+    final lowerQuery = widget.searchQuery.toLowerCase();
     var start = 0;
 
     while (true) {
@@ -1777,7 +2004,7 @@ class _PresentationPreview extends StatelessWidget {
       }
       spans.add(
         TextSpan(
-          text: text.substring(index, index + searchQuery.length),
+          text: text.substring(index, index + widget.searchQuery.length),
           style: const TextStyle(
             backgroundColor: Color(0xFFFACC15), // Yellow highlight
             color: Colors.black,
@@ -1785,7 +2012,7 @@ class _PresentationPreview extends StatelessWidget {
           ),
         ),
       );
-      start = index + searchQuery.length;
+      start = index + widget.searchQuery.length;
     }
 
     if (start < text.length) {
@@ -1807,21 +2034,73 @@ class _PresentationPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = context.isDarkMode ? const Color(0xFF111827) : const Color(0xFFF3F4F6);
+    final bgColor = const Color(0xFF1E1E1E);
 
     return Container(
       color: bgColor,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-        itemCount: data.slides.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 24),
-        itemBuilder: (context, index) => _buildSlide(context, index),
+      child: Column(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '${_currentPage + 1} / ${widget.data.slides.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              itemCount: widget.data.slides.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildSlide(context, index),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            height: 90,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              border: Border(
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+              ),
+            ),
+            child: ListView.separated(
+              controller: _thumbnailScrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: widget.data.slides.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) => _buildSlideThumbnail(context, index),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
       ),
     );
   }
 
   Widget _buildSlide(BuildContext context, int index) {
-    final slide = data.slides[index];
+    final slide = widget.data.slides[index];
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
@@ -1841,62 +2120,117 @@ class _PresentationPreview extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                // Slide Content
                 Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      _buildSlideText(slide.title, true, context),
-                      if (slide.bullets.isNotEmpty) ...<Widget>[
-                        const SizedBox(height: 8),
-                        ListView(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: slide.bullets.map(
-                            (bullet) => Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 5),
-                                    width: 4,
-                                    height: 4,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF16A34A),
-                                      shape: BoxShape.circle,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        _buildSlideText(slide.title, true, context),
+                        if (slide.bullets.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: 8),
+                          ListView(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: slide.bullets.map(
+                              (bullet) => Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 5),
+                                      width: 4,
+                                      height: 4,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF16A34A),
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _buildSlideText(bullet, false, context),
-                                  ),
-                                ],
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildSlideText(bullet, false, context),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ).toList(),
-                        ),
+                            ).toList(),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ),
-                // Slide Number
-                Positioned(
-                  right: 12,
-                  bottom: 8,
-                  child: Text(
-                    '${index + 1}',
-                    style: const TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlideThumbnail(BuildContext context, int index) {
+    final slide = widget.data.slides[index];
+    final isSelected = index == _currentPage;
+    return GestureDetector(
+      onTap: () => _onThumbnailTap(index),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF2D87F3) : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(6),
+                child: Text(
+                  slide.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
