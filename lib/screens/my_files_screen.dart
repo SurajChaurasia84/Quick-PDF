@@ -557,11 +557,10 @@ class _HeaderRow extends StatelessWidget {
             children: <Widget>[
               Text(
                 'My Files',
-                style: TextStyle(
-                  color: context.primaryText,
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: context.primaryText,
+                    ),
               ),
             ],
           ),
