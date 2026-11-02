@@ -50,11 +50,7 @@ class FileService {
         return;
       }
 
-      // Fallback request photos/images for scanning/photo library if they deny manageExternalStorage
-      final photosStatus = await Permission.photos.request();
-      if (photosStatus.isGranted || photosStatus.isLimited) {
-        return;
-      }
+
 
       if (status.isPermanentlyDenied) {
         await openAppSettings();
