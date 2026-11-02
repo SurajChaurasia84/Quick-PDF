@@ -26,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'https://play.google.com/store/apps/details?id=com.docs.quickpdf.app';
   static const String _shareMessage =
       'Try Quick PDF for fast offline document reading and PDF tools.\n\n$_playStoreUrl';
-  static const String _privacyUrl = 'https://www.example.com/privacy-policy';
+  static const String _privacyUrl = 'https://docs.google.com/document/d/1-soHDG-xmz1J7QOMX37Z9WHtBGnCjRCrOafNayAS_r4/edit?usp=sharing';
 
   late final StorageInfoService _storageInfoService = StorageInfoService();
   late Future<StorageOverview?> _storageOverviewFuture =
