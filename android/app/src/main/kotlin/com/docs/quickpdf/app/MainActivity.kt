@@ -10,6 +10,9 @@ import java.io.File
 import android.os.Handler
 import android.os.Looper
 import java.util.concurrent.Executors
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 
 class MainActivity : FlutterActivity() {
     private val channelName = "quick_pdf/storage_info"
@@ -48,6 +51,11 @@ class MainActivity : FlutterActivity() {
                     }
                     "getAndroidSdkInt" -> {
                         result.success(Build.VERSION.SDK_INT)
+                    }
+                    "getSharedPdfPath" -> {
+                        val path = sharedPdfPath
+                        sharedPdfPath = null
+                        result.success(path)
                     }
                     else -> result.notImplemented()
                 }
@@ -196,5 +204,67 @@ class MainActivity : FlutterActivity() {
             "availableBytes" to availableBytes,
             "isAvailable" to true,
         )
+    }
+
+    private var sharedPdfPath: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+        flutterEngine?.let { engine ->
+            sharedPdfPath?.let { path ->
+                Handler(Looper.getMainLooper()).post {
+                    MethodChannel(engine.dartExecutor.binaryMessenger, channelName)
+                        .invokeMethod("onPdfOpened", path)
+                    sharedPdfPath = null
+                }
+            }
+        }
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent == null) return
+        val action = intent.action
+        val data = intent.data
+        if (Intent.ACTION_VIEW == action && data != null) {
+            val scheme = data.scheme
+            if ("content" == scheme || "file" == scheme) {
+                sharedPdfPath = copyUriToCache(data)
+            }
+        }
+    }
+
+    private fun copyUriToCache(uri: Uri): String? {
+        try {
+            val contentResolver = contentResolver
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            var displayName = "shared_file.pdf"
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex != -1) {
+                        val name = it.getString(nameIndex)
+                        if (!name.isNullOrEmpty()) {
+                            displayName = name
+                        }
+                    }
+                }
+            }
+
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val cacheFile = File(cacheDir, displayName)
+            cacheFile.outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            return cacheFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 }
