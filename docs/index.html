@@ -114,37 +114,68 @@
     <div class="container">
         <header>
             <h1>Privacy Policy</h1>
-            <div class="last-updated">Last Updated: July 13, 2026</div>
+            <div class="last-updated">Last Updated: July 14, 2026</div>
         </header>
 
-        <p>Welcome to <strong>Quick PDF</strong>. Your privacy is critically important to us. This Privacy Policy details the types of information we collect, how it is handled, and how we keep your data secure while you use our mobile application.</p>
+        <p>Welcome to <strong>Quick PDF</strong> ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a secure experience while using our mobile application. This Privacy Policy explains our practices regarding the collection, use, disclosure, and security of information when you use the Quick PDF app.</p>
+        
+        <p>By downloading, installing, or using Quick PDF, you agree to the terms outlined in this Privacy Policy. If you do not agree with these terms, please do not use the application.</p>
 
-        <h2>1. Information We Collect and Access</h2>
-        <p>Quick PDF is an offline-first utility application designed to read, scan, edit, and manage document files directly on your device. We operate with a strong commitment to privacy:</p>
+        <h2>1. Information Collection and Usage</h2>
+        <p>We operate under a strict "privacy-by-design" and "offline-first" architecture. We do not run remote cloud databases to harvest your personal information.</p>
+        
+        <h3>A. Personal Data</h3>
         <ul>
-            <li><strong>Local File and Storage Access:</strong> The app requests permission to access your device's external storage (such as the <code>MANAGE_EXTERNAL_STORAGE</code> permission). This is required strictly to scan, identify, display, open, and perform operations on PDF and Office documents (.docx, .xlsx, .pptx, .txt, etc.) on your device. All processing is executed locally. <strong>We do not upload or send your files to any remote server.</strong></li>
-            <li><strong>Camera Access:</strong> The application requires access to the device's camera for the document scanner feature. The images captured are processed locally to create PDFs and extract text (via local OCR text recognition). We do not store or transmit captured camera frames outside your device.</li>
-            <li><strong>No Personal Data Collection:</strong> We do not ask for, collect, or store personal identifiers, email addresses (except when you contact support), phone numbers, contacts, location, search history, or personal usage statistics.</li>
+            <li><strong>No Account Registration:</strong> You do not need to register an account, sign in, or provide any personal details (such as name, email address, phone number, or physical address) to use the core features of the app.</li>
+            <li><strong>Support Communication:</strong> If you contact us via email for support, feedback, or inquiries, we will only use your email address and any details you provide to respond to your request. We do not use this information for marketing or share it with third parties.</li>
         </ul>
 
-        <h2>2. Third-Party Services</h2>
-        <p>Quick PDF is fully offline and does not integrate third-party trackers, advertisements, or analytics SDKs that collect or share your personal data. Any text recognition (OCR) or document viewing processing is performed directly on your local CPU/GPU using on-device models.</p>
-
-        <h2>3. Data Retention and Security</h2>
-        <p>Since all your files are stored locally on your device's filesystem (in your designated downloads folders, private sandbox, or documents directory), you retain full ownership and control over your files. The safety of your documents depends on the physical and access security of your device. Uninstalling the application will remove files stored inside the app's private sandbox folder.</p>
-
-        <h2>4. Rationale for Requested Android Permissions</h2>
+        <h3>B. On-Device File Processing</h3>
         <ul>
-            <li><strong>All Files Access (MANAGE_EXTERNAL_STORAGE):</strong> Necessary for scanning and indexing files on your device to let you select, view, and organize PDFs and documents across different folders.</li>
-            <li><strong>Camera (CAMERA):</strong> Necessary for capturing photos of documents, receipts, or notes to scan and merge them into PDF format.</li>
+            <li><strong>Document and File Access:</strong> The app requires access to your device's files and documents (via the <code>MANAGE_EXTERNAL_STORAGE</code> permission on Android) to function. This allows the app to scan, list, view, edit, organize, and perform operations on PDF and Office files (.docx, .xlsx, .pptx, .txt, etc.).</li>
+            <li><strong>100% Local Execution:</strong> All file processing, rendering, and modification are executed directly on your device. We do not upload your documents, search history, metadata, or files to any external servers. Your documents remain entirely under your control.</li>
         </ul>
 
-        <h2>5. Changes to This Privacy Policy</h2>
-        <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date. We encourage you to review this policy periodically.</p>
+        <h3>C. Camera and Media Access</h3>
+        <ul>
+            <li><strong>Camera Scanner:</strong> The application requests access to the device's camera (<code>CAMERA</code> permission) to let you scan physical documents, receipts, or notes.</li>
+            <li><strong>On-Device OCR & Processing:</strong> Captured images are processed entirely on-device to generate PDFs or perform Optical Character Recognition (OCR) to extract text. We do not store, upload, or transmit camera frames or raw images to any remote servers.</li>
+        </ul>
+
+        <h2>2. Rationale for Requested Permissions</h2>
+        <p>To deliver the core functionality of the application, we request the following system permissions:</p>
+        <ul>
+            <li><strong>Read & Write External Storage / All Files Access (MANAGE_EXTERNAL_STORAGE):</strong> Required to index, read, open, edit, and save document files across folders on your device. Without this, the app cannot access or manage your files.</li>
+            <li><strong>Camera Permission (CAMERA):</strong> Required to capture images of physical documents for the document scanning feature.</li>
+        </ul>
+        <p>You can grant or revoke these permissions at any time through your device's system settings. Please note that disabling these permissions may limit your ability to use certain features of the app.</p>
+
+        <h2>3. Third-Party Services and Analytics</h2>
+        <ul>
+            <li><strong>No Third-Party Trackers:</strong> Quick PDF does not integrate third-party analytics SDKs, advertising networks, or user tracking tools.</li>
+            <li><strong>On-Device AI:</strong> Any artificial intelligence or machine learning tasks (like text recognition/OCR) are computed locally on your device's CPU/GPU and do not communicate with third-party web APIs.</li>
+            <li><strong>Offline Operation:</strong> Because the app does not send data to the internet, your app usage remains completely anonymous and private.</li>
+        </ul>
+
+        <h2>4. Data Retention, Control, and Deletion</h2>
+        <ul>
+            <li><strong>Local Ownership:</strong> You have complete control over your data. Since all files, scanned documents, and app configurations are stored locally on your device's storage, we do not store your data and cannot delete it for you.</li>
+            <li><strong>File Deletion:</strong> You can delete your documents at any time using the app's interface or your device's file manager.</li>
+            <li><strong>Application Uninstallation:</strong> Uninstalling Quick PDF will automatically delete the application's private cache and sandbox storage. Files saved in public directories (like your Downloads or Documents folder) will remain on your device.</li>
+        </ul>
+
+        <h2>5. Children’s Privacy</h2>
+        <p>Our services are not designed for or targeted at children under the age of 13. We do not knowingly collect, request, or maintain personal information from children. If we discover that a child under 13 has provided us with personal information (for example, through support emails), we will delete it immediately from our records.</p>
+
+        <h2>6. Security of Your Information</h2>
+        <p>We implement industry-standard local security measures on your device to protect your documents. However, please remember that no method of local storage or electronic transmission is 100% secure. The safety of your documents also relies on your device's physical security, lock screens, and malware protection. We recommend keeping your device OS updated.</p>
+
+        <h2>7. Changes to This Privacy Policy</h2>
+        <p>We may update our Privacy Policy from time to time to reflect changes in our app's features or legal requirements. Any updates will be posted on this page with a revised "Last Updated" date. We advise you to review this Privacy Policy periodically for any changes.</p>
 
         <div class="card">
-            <h2>6. Contact Us</h2>
-            <p>If you have any questions, suggestions, or concerns regarding your privacy or the functionality of Quick PDF, please feel free to reach out to us at our support email address:</p>
+            <h2>8. Contact Us</h2>
+            <p>If you have any questions, suggestions, or concerns regarding this Privacy Policy or our practices, please contact us at:</p>
             <p><a href="mailto:contact.appsinfo@gmail.com" class="email-link">contact.appsinfo@gmail.com</a></p>
         </div>
     </div>
