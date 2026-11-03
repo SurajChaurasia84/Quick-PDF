@@ -31,7 +31,14 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   final TextEditingController _findController = TextEditingController();
   final FocusNode _findFocusNode = FocusNode();
   final PdfViewerController _pdfViewerController = PdfViewerController();
-  late final PdfTextSearcher _pdfTextSearcher = PdfTextSearcher(_pdfViewerController);
+  PdfTextSearcher? _pdfTextSearcher;
+
+  void _initPdfTextSearcher() {
+    if (_pdfTextSearcher != null) return;
+    if (!_pdfViewerController.isReady) return;
+    _pdfTextSearcher = PdfTextSearcher(_pdfViewerController)
+      ..addListener(_onPdfSearcherChanged);
+  }
   bool _isFindMode = false;
   bool _isSearching = false;
   String _searchQuery = '';
@@ -65,7 +72,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   void initState() {
     super.initState();
     _appController = context.read<AppController>();
-    _pdfTextSearcher.addListener(_onPdfSearcherChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -91,8 +97,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _pdfTextSearcher.removeListener(_onPdfSearcherChanged);
-    _pdfTextSearcher.dispose();
+    _pdfTextSearcher?.removeListener(_onPdfSearcherChanged);
+    _pdfTextSearcher?.dispose();
+    _pdfTextSearcher = null;
     _findController.dispose();
     _findFocusNode.dispose();
     _scrubberHideTimer?.cancel();
@@ -751,10 +758,19 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                     scrollPhysics: const ClampingScrollPhysics(),
                     enableKeyboardNavigation: true,
                     pagePaintCallbacks: [
-                      _pdfTextSearcher.pageTextMatchPaintCallback,
+                      (canvas, pageRect, page) {
+                        _pdfTextSearcher?.pageTextMatchPaintCallback(canvas, pageRect, page);
+                      },
                     ],
                     onViewerReady: (document, controller) async {
                       if (!mounted) return;
+                      _initPdfTextSearcher();
+                      if (_searchQuery.trim().isNotEmpty) {
+                        _pdfTextSearcher?.startTextSearch(
+                          _searchQuery.trim(),
+                          searchImmediately: true,
+                        );
+                      }
                       setState(() {
                         _totalPages = document.pages.length;
                       });
@@ -1159,7 +1175,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   void _closeFindMode() {
     _findFocusNode.unfocus();
     if (_currentFile.isPdf) {
-      _pdfTextSearcher.resetTextSearch();
+      _pdfTextSearcher?.resetTextSearch();
     }
     setState(() {
       _isFindMode = false;
@@ -1175,7 +1191,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     _findController.clear();
     _findFocusNode.requestFocus();
     if (_currentFile.isPdf) {
-      _pdfTextSearcher.resetTextSearch();
+      _pdfTextSearcher?.resetTextSearch();
     }
     setState(() {
       _searchQuery = '';
@@ -1187,15 +1203,17 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   void _onPdfSearcherChanged() {
     if (!mounted || !_currentFile.isPdf) return;
+    final searcher = _pdfTextSearcher;
+    if (searcher == null) return;
     setState(() {
-      _isSearching = _pdfTextSearcher.isSearching;
-      final total = _pdfTextSearcher.matches.length;
-      final current = _pdfTextSearcher.currentIndex;
+      _isSearching = searcher.isSearching;
+      final total = searcher.matches.length;
+      final current = searcher.currentIndex;
       _currentMatchIndex = current ?? 0;
       _searchMatches = List.generate(
         total,
         (index) => _DocumentSearchMatch(
-          pageNumber: _pdfTextSearcher.matches[index].pageNumber,
+          pageNumber: searcher.matches[index].pageNumber,
           snippet: '',
         ),
       );
@@ -1205,7 +1223,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   Future<void> _onFindQueryChanged(String value) async {
     final query = value.trim();
     if (_currentFile.isPdf) {
-      _pdfTextSearcher.resetTextSearch();
+      _pdfTextSearcher?.resetTextSearch();
     }
 
     setState(() {
@@ -1222,7 +1240,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     }
 
     if (_currentFile.isPdf) {
-      _pdfTextSearcher.startTextSearch(
+      _initPdfTextSearcher();
+      _pdfTextSearcher?.startTextSearch(
         query,
         searchImmediately: true,
       );
@@ -1487,7 +1506,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   Future<void> _goToPreviousMatch() async {
     if (_currentFile.isPdf) {
-      await _pdfTextSearcher.goToPrevMatch();
+      await _pdfTextSearcher?.goToPrevMatch();
       return;
     }
     if (_searchMatches.isEmpty) {
@@ -1503,7 +1522,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   Future<void> _goToNextMatch() async {
     if (_currentFile.isPdf) {
-      await _pdfTextSearcher.goToNextMatch();
+      await _pdfTextSearcher?.goToNextMatch();
       return;
     }
     if (_searchMatches.isEmpty) {
