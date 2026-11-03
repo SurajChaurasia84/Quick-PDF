@@ -148,22 +148,21 @@ SystemUiOverlayStyle overlayStyleForTheme(ThemeData theme) {
 class _FastFadePageTransitionsBuilder extends PageTransitionsBuilder {
   const _FastFadePageTransitionsBuilder();
 
+  static final Animatable<double> _fadeTween = Tween<double>(
+    begin: 0.92,
+    end: 1.0,
+  ).chain(CurveTween(curve: Curves.easeOutCubic));
+
   @override
   Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
+    PageRoute<T>? route,
+    BuildContext? context,
     Animation<double> animation,
-    Animation<double> secondaryAnimation,
+    Animation<double>? secondaryAnimation,
     Widget child,
   ) {
-    final curvedAnimation = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-
     return FadeTransition(
-      opacity: Tween<double>(begin: 0.92, end: 1).animate(curvedAnimation),
+      opacity: animation.drive(_fadeTween),
       child: child,
     );
   }
