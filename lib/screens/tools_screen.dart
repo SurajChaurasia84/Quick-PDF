@@ -9,7 +9,6 @@ import '../utils/theme_utils.dart';
 import '../widgets/fixed_top_header.dart';
 import '../widgets/tool_tile.dart';
 import 'compress_pdf_screen.dart';
-import 'edit_pdf_screen.dart';
 import 'add_page_numbers_screen.dart';
 import 'image_to_pdf_screen.dart';
 import 'merge_pdf_screen.dart';
@@ -319,21 +318,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => SignPdfScreen(inputPath: files.first),
-          ),
-        );
-        break;
-      case 'edit_pdf':
-        final files = await controller.fileService.pickPdfFiles(allowMultiple: false);
-        if (files.isEmpty) {
-          controller.setStatus('Pick a PDF to edit.');
-          break;
-        }
-        if (!context.mounted) {
-          return;
-        }
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => EditPdfScreen(inputPath: files.first),
           ),
         );
         break;
