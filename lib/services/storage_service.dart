@@ -81,4 +81,16 @@ class StorageService {
     await init();
     await _prefs!.setInt(_lastScanTimeKey, time.millisecondsSinceEpoch);
   }
+
+  static const _lastReadPagePrefix = 'last_page_';
+
+  Future<int?> getLastReadPage(String path) async {
+    await init();
+    return _prefs!.getInt('$_lastReadPagePrefix$path');
+  }
+
+  Future<void> setLastReadPage(String path, int page) async {
+    await init();
+    await _prefs!.setInt('$_lastReadPagePrefix$path', page);
+  }
 }
