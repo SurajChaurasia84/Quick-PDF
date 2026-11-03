@@ -81,6 +81,7 @@ class _MyFilesScreenState extends State<MyFilesScreen> {
     return Scaffold(
       backgroundColor: context.appBackground,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             if (controller.isScanning)
