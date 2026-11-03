@@ -1,7 +1,7 @@
 name: quick_pdf
 description: "Offline-first document reader, PDF toolkit, scanner, OCR, and AI tools."
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.10.4
