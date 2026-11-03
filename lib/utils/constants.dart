@@ -60,13 +60,6 @@ const coreTools = <ToolAction>[
     color: Color(0xFFFF8F00),
   ),
   ToolAction(
-    id: 'edit_pdf',
-    title: 'Edit PDF',
-    description: 'Modify text and annotations inside PDF files.',
-    icon: Icons.edit_rounded,
-    color: Color(0xFF9C27B0),
-  ),
-  ToolAction(
     id: 'sign_pdf',
     title: 'Sign PDF',
     description: 'Add signatures to PDF contracts and forms.',
