@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/theme_utils.dart';
 import '../widgets/recent_file_card.dart';
@@ -298,6 +299,10 @@ class _CategoryFilesScreenState extends State<CategoryFilesScreen> {
                       },
                     ),
                   ),
+          ),
+          SafeArea(
+            top: false,
+            child: AdService.dynamicBanner(),
           ),
         ],
       ),
