@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
@@ -113,7 +114,10 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
               ),
             ],
           ),
-          body: RefreshIndicator(
+          body: Column(
+            children: <Widget>[
+              Expanded(
+                child: RefreshIndicator(
             onRefresh: () async {
               await controller.refreshAll();
               _reloadCreatedFiles(controller);
@@ -185,6 +189,13 @@ class _MyCreationsScreenState extends State<MyCreationsScreen> {
                         ),
               ],
             ),
+          ),
+              ),
+              SafeArea(
+                top: false,
+                child: AdService.dynamicBanner(),
+              ),
+            ],
           ),
         );
       },
