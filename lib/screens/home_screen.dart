@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/theme_utils.dart';
 import '../widgets/fixed_top_header.dart';
@@ -199,7 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
+                AdService.fixedBanner(),
+                const SizedBox(height: 14),
                 _SectionLabel(title: 'Places'),
                 const SizedBox(height: 12),
                 GridView.builder(
