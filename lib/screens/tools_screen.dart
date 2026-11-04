@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
 import '../models/tool_action.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/constants.dart';
 import '../utils/theme_utils.dart';
@@ -155,6 +156,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     );
                   },
                 ),
+                
+              const SizedBox(height: 18),
+              AdService.fixedNative(),
+              const SizedBox(height: 14),
             ],
           ),
         ),
