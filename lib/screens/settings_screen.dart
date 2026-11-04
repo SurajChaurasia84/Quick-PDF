@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/storage_info.dart';
 import '../models/storage_overview.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../services/storage_info_service.dart';
 import '../utils/formatters.dart';
@@ -136,7 +137,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
+              AdService.fixedNative(),
+              const SizedBox(height: 14),
               GlassCard(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
