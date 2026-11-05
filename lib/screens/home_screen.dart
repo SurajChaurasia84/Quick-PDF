@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 14),
-                AdService.fixedBanner(),
+                AdService.dynamicBanner(),
                 const SizedBox(height: 14),
                 _SectionLabel(title: 'Places'),
                 const SizedBox(height: 12),
