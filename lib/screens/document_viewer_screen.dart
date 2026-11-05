@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,7 +48,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   // PDF reading & fast-scroll state notifiers
   final ValueNotifier<int> _currentPageNotifier = ValueNotifier<int>(1);
   int get _currentPage => _currentPageNotifier.value;
-  int _totalPages = 0;
+  final ValueNotifier<int> _totalPagesNotifier = ValueNotifier<int>(0);
+  int get _totalPages => _totalPagesNotifier.value;
+  set _totalPages(int val) => _totalPagesNotifier.value = val;
+  final ValueNotifier<double> _scrollProgressNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<bool> _isScrubberVisibleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isDraggingScrubberNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<double?> _dragPillYNotifier = ValueNotifier<double?>(null);
@@ -55,6 +59,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   // Fullscreen header state
   bool _isHeaderVisible = true;
+  double _lastScrollY = 0.0;
 
   late final Future<String?> _textContentFuture = _currentFile.isText && _fileExists
       ? File(_currentFile.path).readAsString()
@@ -90,6 +95,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
         ? _appController.officeService.extractPresentationPreview(_currentFile.path)
         : Future<PresentationPreviewData?>.value(null);
     if (_currentFile.isPdf && _fileExists) {
+      _pdfViewerController.addListener(_onPdfViewerScroll);
       _preparePdf();
     }
   }
@@ -97,6 +103,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _pdfViewerController.removeListener(_onPdfViewerScroll);
     _pdfTextSearcher?.removeListener(_onPdfSearcherChanged);
     _pdfTextSearcher?.dispose();
     _pdfTextSearcher = null;
@@ -104,6 +111,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     _findFocusNode.dispose();
     _scrubberHideTimer?.cancel();
     _currentPageNotifier.dispose();
+    _totalPagesNotifier.dispose();
+    _scrollProgressNotifier.dispose();
     _isScrubberVisibleNotifier.dispose();
     _isDraggingScrubberNotifier.dispose();
     _dragPillYNotifier.dispose();
@@ -127,18 +136,40 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   void _toggleHeader() {
     if (_isFindMode) return;
-    final next = !_isHeaderVisible;
     setState(() {
-      _isHeaderVisible = next;
+      _isHeaderVisible = !_isHeaderVisible;
     });
-    _updateSystemUi(next);
   }
 
-  void _updateSystemUi(bool visible) {
-    if (visible) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  void _onPdfViewerScroll() {
+    if (!_pdfViewerController.isReady) return;
+
+    final documentHeight = _pdfViewerController.documentSize.height;
+    final viewHeight = _pdfViewerController.viewSize.height;
+    final maxScroll = documentHeight - viewHeight;
+
+    if (maxScroll > 0) {
+      final currentY = _pdfViewerController.visibleRect.top;
+      final continuousRatio = (currentY / maxScroll).clamp(0.0, 1.0);
+      _scrollProgressNotifier.value = continuousRatio;
+
+      final dy = currentY - _lastScrollY;
+      if (dy > 12) {
+        if (_isHeaderVisible && !_isFindMode) {
+          setState(() {
+            _isHeaderVisible = false;
+          });
+        }
+        _showScrubberTemporarily();
+      } else if (dy < -12 || currentY <= 25) {
+        if (!_isHeaderVisible) {
+          setState(() {
+            _isHeaderVisible = true;
+          });
+        }
+        _showScrubberTemporarily();
+      }
+      _lastScrollY = currentY;
     }
   }
 
@@ -147,10 +178,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     _isDraggingScrubberNotifier.value = true;
     _isScrubberVisibleNotifier.value = true;
 
-    final double pageRatio = _totalPages > 1
-        ? ((_currentPageNotifier.value - 1) / (_totalPages - 1)).clamp(0.0, 1.0)
-        : 0.0;
-    _dragPillYNotifier.value = (pageRatio * (trackHeight - 36)).clamp(0.0, trackHeight - 36);
+    final double continuousProgress = _scrollProgressNotifier.value;
+    _dragPillYNotifier.value = (continuousProgress * (trackHeight - 36)).clamp(0.0, trackHeight - 36);
   }
 
   void _onScrubberTrackDragUpdate(DragUpdateDetails details, double trackHeight) {
@@ -159,6 +188,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     _dragPillYNotifier.value = currentY;
 
     final scrubRatio = (currentY / (trackHeight - 36)).clamp(0.0, 1.0);
+    _scrollProgressNotifier.value = scrubRatio;
     final targetPage = (1 + (scrubRatio * (_totalPages - 1))).round().clamp(1, _totalPages);
     if (targetPage != _currentPageNotifier.value) {
       _currentPageNotifier.value = targetPage;
@@ -173,6 +203,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     _dragPillYNotifier.value = currentY;
 
     final scrubRatio = (currentY / (trackHeight - 36)).clamp(0.0, 1.0);
+    _scrollProgressNotifier.value = scrubRatio;
     final targetPage = (1 + (scrubRatio * (_totalPages - 1))).round().clamp(1, _totalPages);
     if (targetPage != _currentPageNotifier.value) {
       _currentPageNotifier.value = targetPage;
@@ -316,17 +347,16 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   Widget _buildFloatingScrubber({
     required BuildContext context,
     required int currentPage,
+    required int totalPages,
+    required double scrollProgress,
     required double? dragPillY,
     required bool showPill,
     required bool isDragging,
     required double trackHeight,
   }) {
-    if (_totalPages <= 0) return const SizedBox.shrink();
+    if (totalPages <= 0) return const SizedBox.shrink();
 
-    final double pageRatio = _totalPages > 1
-        ? ((currentPage - 1) / (_totalPages - 1)).clamp(0.0, 1.0)
-        : 0.0;
-    final double restingPillY = (pageRatio * (trackHeight - 36)).clamp(0.0, trackHeight - 36);
+    final double restingPillY = (scrollProgress * (trackHeight - 36)).clamp(0.0, trackHeight - 36);
     final double pillY = dragPillY ?? restingPillY;
 
     return Positioned(
@@ -372,8 +402,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
               ),
               // Floating Pill & Thumb moving together (animated when resting, instant when dragging)
               AnimatedPositioned(
-                duration: isDragging ? Duration.zero : const Duration(milliseconds: 140),
-                curve: Curves.easeOutCubic,
+                duration: isDragging ? Duration.zero : const Duration(milliseconds: 60),
+                curve: Curves.linear,
                 right: 2,
                 top: pillY,
                 child: GestureDetector(
@@ -429,7 +459,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                                     ),
                                   ),
                                   Text(
-                                    ' of $_totalPages',
+                                    ' of $totalPages',
                                     style: TextStyle(
                                       color: Colors.white.withValues(
                                         alpha: 0.72,
@@ -477,7 +507,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   @override
   Widget build(BuildContext context) {
     final usePdfChrome = _currentFile.isPdf && _fileExists;
-    final pdfBackground = context.isDarkMode ? Colors.black : Colors.white;
+    final pdfBackground = Theme.of(context).scaffoldBackgroundColor;
     final pdfForeground =
         context.isDarkMode ? Colors.white : const Color(0xFF111827);
 
@@ -687,7 +717,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
   }
 
   Widget _buildContent(BuildContext context) {
-    final pdfBackground = context.isDarkMode ? Colors.black : Colors.white;
+    final pdfBackground = Theme.of(context).scaffoldBackgroundColor;
     if (!_fileExists) {
       return Padding(
         padding: const EdgeInsets.all(20),
@@ -752,11 +782,32 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
               Positioned.fill(
                 child: PdfViewer.file(
                   _currentFile.path,
+                  key: ValueKey(_currentFile.path),
                   controller: _pdfViewerController,
                   params: PdfViewerParams(
                     backgroundColor: pdfBackground,
                     scrollPhysics: const ClampingScrollPhysics(),
                     enableKeyboardNavigation: true,
+                    layoutPages: (pages, params) {
+                      final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
+                      final pageLayout = <Rect>[];
+                      var y = params.margin + 85.0;
+                      for (var i = 0; i < pages.length; i++) {
+                        final page = pages[i];
+                        final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
+                        pageLayout.add(rect);
+                        y += page.height + params.margin;
+                      }
+                      return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
+                    },
+                    loadingBannerBuilder: (context, bytesDownloaded, totalBytes) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                        ),
+                      );
+                    },
                     pagePaintCallbacks: [
                       (canvas, pageRect, page) {
                         _pdfTextSearcher?.pageTextMatchPaintCallback(canvas, pageRect, page);
@@ -771,9 +822,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                           searchImmediately: true,
                         );
                       }
-                      setState(() {
-                        _totalPages = document.pages.length;
-                      });
+                      _totalPages = document.pages.length;
                       final lastPage = await _appController.storageService.getLastReadPage(_currentFile.path);
                       if (mounted && lastPage != null && lastPage > 1 && lastPage <= document.pages.length) {
                         await controller.goToPage(pageNumber: lastPage, duration: Duration.zero);
@@ -858,13 +907,25 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                           return ValueListenableBuilder<int>(
                             valueListenable: _currentPageNotifier,
                             builder: (context, currentPage, _) {
-                              return _buildFloatingScrubber(
-                                context: context,
-                                currentPage: currentPage,
-                                dragPillY: dragPillY,
-                                showPill: showPill,
-                                isDragging: isDragging,
-                                trackHeight: scrubHeight,
+                              return ValueListenableBuilder<int>(
+                                valueListenable: _totalPagesNotifier,
+                                builder: (context, totalPages, _) {
+                                  return ValueListenableBuilder<double>(
+                                    valueListenable: _scrollProgressNotifier,
+                                    builder: (context, scrollProgress, _) {
+                                      return _buildFloatingScrubber(
+                                        context: context,
+                                        currentPage: currentPage,
+                                        totalPages: totalPages,
+                                        scrollProgress: scrollProgress,
+                                        dragPillY: dragPillY,
+                                        showPill: showPill,
+                                        isDragging: isDragging,
+                                        trackHeight: scrubHeight,
+                                      );
+                                    },
+                                  );
+                                },
                               );
                             },
                           );
