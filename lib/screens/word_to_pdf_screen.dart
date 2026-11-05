@@ -8,7 +8,7 @@ import '../models/app_file.dart';
 import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class WordToPdfScreen extends StatefulWidget {
   const WordToPdfScreen({
@@ -197,11 +197,7 @@ class _WordToPdfScreenState extends State<WordToPdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: createdFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: createdFile, title: 'Word Converted to PDF');
   }
 
   String _suggestedOutputName() {
