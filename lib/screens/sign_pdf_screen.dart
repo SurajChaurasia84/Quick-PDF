@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../services/pdf_service.dart';
 import '../utils/formatters.dart';
@@ -61,11 +62,12 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: <Widget>[
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: <Widget>[
             Text(
               'Draw your signature, choose its position, and save a signed copy of your PDF.',
               style: TextStyle(
@@ -185,6 +187,12 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
           ],
         ),
       ),
+      SafeArea(
+        top: false,
+        child: AdService.dynamicBanner(),
+      ),
+    ],
+  ),
     );
   }
 
