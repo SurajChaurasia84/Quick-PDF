@@ -18,12 +18,23 @@ class ShellScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<AppController>();
-    final screens = <Widget>[
-      const HomeScreen(),
-      const ToolsScreen(),
-      const MyFilesScreen(),
-      const SettingsScreen(),
-    ];
+    Widget activeScreen;
+    switch (controller.currentIndex) {
+      case 0:
+        activeScreen = const HomeScreen(key: PageStorageKey('home_tab'));
+        break;
+      case 1:
+        activeScreen = const ToolsScreen(key: PageStorageKey('tools_tab'));
+        break;
+      case 2:
+        activeScreen = const MyFilesScreen(key: PageStorageKey('files_tab'));
+        break;
+      case 3:
+        activeScreen = const SettingsScreen(key: PageStorageKey('settings_tab'));
+        break;
+      default:
+        activeScreen = const HomeScreen(key: PageStorageKey('home_tab'));
+    }
 
     return PopScope(
       canPop: controller.currentIndex == 0,
@@ -39,10 +50,7 @@ class ShellScreen extends StatelessWidget {
           removeBottom: true,
           child: SafeArea(
             bottom: false,
-            child: IndexedStack(
-              index: controller.currentIndex,
-              children: screens,
-            ),
+            child: activeScreen,
           ),
         ),
         bottomNavigationBar: _CradleBottomNavBar(
