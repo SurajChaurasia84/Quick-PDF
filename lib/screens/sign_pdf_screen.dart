@@ -13,7 +13,7 @@ import '../services/pdf_service.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class SignPdfScreen extends StatefulWidget {
   const SignPdfScreen({
@@ -37,6 +37,7 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   @override
   void initState() {
     super.initState();
+    AdService.loadInterstitial();
     _loadPageCount();
   }
 
@@ -302,11 +303,7 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: signedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: signedFile, title: 'PDF Signed Successfully');
   }
 
   String _suggestedOutputName() {
