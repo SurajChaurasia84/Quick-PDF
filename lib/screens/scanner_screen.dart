@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
 import '../services/app_controller.dart';
-import '../utils/instant_page_route.dart';
 import '../widgets/glass_card.dart';
+import '../services/ad_service.dart';
 import 'tool_success_screen.dart';
 
 class ScannerScreen extends StatefulWidget {
