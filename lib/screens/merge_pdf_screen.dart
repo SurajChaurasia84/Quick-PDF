@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
 import 'document_viewer_screen.dart';
@@ -106,7 +107,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -129,6 +130,10 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                 ],
               ),
             ),
+          ),
+          SafeArea(
+            top: false,
+            child: AdService.dynamicBanner(),
           ),
         ],
       ),
