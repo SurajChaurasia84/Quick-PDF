@@ -8,7 +8,6 @@ import '../models/app_file.dart';
 import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
-import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
 import 'tool_success_screen.dart';
 
