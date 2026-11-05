@@ -71,7 +71,7 @@ void main() {
     expect(find.text('Open PDF'), findsOneWidget);
     await tester.tap(find.text('Open PDF'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(DocumentViewerScreen), findsOneWidget);
   });
 }
