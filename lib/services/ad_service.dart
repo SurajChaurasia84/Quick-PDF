@@ -362,7 +362,7 @@ class _AdNativeWidgetState extends State<AdNativeWidget> {
 
   double get _effectiveHeight {
     if (widget.height != null) return widget.height!;
-    return widget.templateType == TemplateType.small ? 90.0 : 320.0;
+    return widget.templateType == TemplateType.small ? 90.0 : 360.0;
   }
 
   @override
