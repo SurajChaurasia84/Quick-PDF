@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
 import 'document_viewer_screen.dart';
@@ -107,7 +108,7 @@ class _SplitPdfScreenState extends State<SplitPdfScreen> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -119,6 +120,10 @@ class _SplitPdfScreenState extends State<SplitPdfScreen> {
                 ),
               ),
             ),
+          ),
+          SafeArea(
+            top: false,
+            child: AdService.dynamicBanner(),
           ),
         ],
       ),
