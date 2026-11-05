@@ -12,7 +12,7 @@ class AdService {
   static bool useTestAds = kDebugMode;
 
   static const String _prodBannerId = 'ca-app-pub-2209498185642035/7486298189';
-  static const String _prodInterstitialId = 'ca-app-pub-2209498185642035/XXXXXXXXXX';
+  static const String _prodInterstitialId = 'ca-app-pub-2209498185642035/5710039860';
   static const String _prodNativeId = 'ca-app-pub-2209498185642035/6843922479';
   static const String _prodAppOpenId = 'ca-app-pub-2209498185642035/XXXXXXXXXX';
   static const String _prodRewardedId = 'ca-app-pub-2209498185642035/XXXXXXXXXX';
