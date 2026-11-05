@@ -141,12 +141,21 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     });
   }
 
+  Future<void> _navigateToPage(int targetPage, {Duration duration = const Duration(milliseconds: 200)}) async {
+    if (!_pdfViewerController.isReady) return;
+    if (targetPage <= 1) {
+      await _pdfViewerController.goToPosition(documentOffset: Offset.zero, duration: duration);
+    } else {
+      await _pdfViewerController.goToPage(pageNumber: targetPage, duration: duration);
+    }
+  }
+
   void _onPdfViewerScroll() {
     if (!_pdfViewerController.isReady) return;
 
     final documentHeight = _pdfViewerController.documentSize.height;
-    final viewHeight = _pdfViewerController.viewSize.height;
-    final maxScroll = documentHeight - viewHeight;
+    final visibleHeight = _pdfViewerController.visibleRect.height;
+    final maxScroll = documentHeight - visibleHeight;
 
     if (maxScroll > 0) {
       final currentY = _pdfViewerController.visibleRect.top;
@@ -192,7 +201,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     final targetPage = (1 + (scrubRatio * (_totalPages - 1))).round().clamp(1, _totalPages);
     if (targetPage != _currentPageNotifier.value) {
       _currentPageNotifier.value = targetPage;
-      _pdfViewerController.goToPage(pageNumber: targetPage, duration: Duration.zero);
+      _navigateToPage(targetPage, duration: Duration.zero);
       HapticFeedback.selectionClick();
     }
   }
@@ -207,7 +216,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     final targetPage = (1 + (scrubRatio * (_totalPages - 1))).round().clamp(1, _totalPages);
     if (targetPage != _currentPageNotifier.value) {
       _currentPageNotifier.value = targetPage;
-      _pdfViewerController.goToPage(pageNumber: targetPage, duration: Duration.zero);
+      _navigateToPage(targetPage, duration: Duration.zero);
       HapticFeedback.selectionClick();
     }
   }
@@ -338,7 +347,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
     );
 
     if (targetPage != null && mounted) {
-      _pdfViewerController.goToPage(pageNumber: targetPage);
+      _navigateToPage(targetPage);
       _currentPageNotifier.value = targetPage;
       _showScrubberTemporarily();
     }
@@ -790,11 +799,15 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                     backgroundColor: pdfBackground,
                     scrollPhysics: const ClampingScrollPhysics(),
                     enableKeyboardNavigation: true,
-                    boundaryMargin: EdgeInsets.only(top: headerHeight, bottom: 40.0),
+                    boundaryMargin: const EdgeInsets.only(bottom: 40.0),
                     layoutPages: (pages, params) {
                       final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
+                      final scale = (width > 0 && constraints.maxWidth > 0)
+                          ? (constraints.maxWidth / width)
+                          : 1.0;
+                      final topDocPadding = (headerHeight / scale) + params.margin;
                       final pageLayout = <Rect>[];
-                      var y = params.margin;
+                      var y = topDocPadding;
                       for (var i = 0; i < pages.length; i++) {
                         final page = pages[i];
                         final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
@@ -831,6 +844,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                         await controller.goToPage(pageNumber: lastPage, duration: Duration.zero);
                         _currentPageNotifier.value = lastPage;
                         _showScrubberTemporarily();
+                      } else {
+                        await controller.goToPosition(documentOffset: Offset.zero, duration: Duration.zero);
                       }
                     },
                     onPageChanged: (pageNumber) {
@@ -1601,7 +1616,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
 
   Future<void> _openMatch(_DocumentSearchMatch match) async {
     if (_currentFile.isPdf) {
-      await _pdfViewerController.goToPage(pageNumber: match.pageNumber);
+      await _navigateToPage(match.pageNumber);
       _currentPageNotifier.value = match.pageNumber;
       _showScrubberTemporarily();
     } else if (_currentFile.extension.toLowerCase() == 'pptx') {
