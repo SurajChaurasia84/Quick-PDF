@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
 import 'document_viewer_screen.dart';
@@ -98,7 +99,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -121,6 +122,10 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
                 ],
               ),
             ),
+          ),
+          SafeArea(
+            top: false,
+            child: AdService.dynamicBanner(),
           ),
         ],
       ),
