@@ -12,7 +12,7 @@ import '../services/pdf_service.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class AddPageNumbersScreen extends StatefulWidget {
   const AddPageNumbersScreen({
@@ -224,11 +224,7 @@ class _AddPageNumbersScreenState extends State<AddPageNumbersScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: numberedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: numberedFile, title: 'Page Numbers Added');
   }
 
   String _suggestedOutputName() {
