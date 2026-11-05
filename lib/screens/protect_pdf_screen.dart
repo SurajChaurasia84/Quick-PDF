@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
@@ -185,6 +186,11 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
                   icon: const Icon(Icons.lock_rounded),
                   label: Text(_isProtecting ? 'Saving...' : 'Protect PDF'),
                 ),
+              ),
+              const SizedBox(height: 8),
+              SafeArea(
+                top: false,
+                child: AdService.dynamicBanner(),
               ),
             ],
           ),
