@@ -776,6 +776,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
       return LayoutBuilder(
         builder: (context, constraints) {
           final scrubHeight = constraints.maxHeight - 40;
+          final statusBarHeight = MediaQuery.paddingOf(context).top;
+          final headerHeight = statusBarHeight + kToolbarHeight;
 
           return Stack(
             children: <Widget>[
@@ -788,10 +790,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen>
                     backgroundColor: pdfBackground,
                     scrollPhysics: const ClampingScrollPhysics(),
                     enableKeyboardNavigation: true,
+                    boundaryMargin: EdgeInsets.only(top: headerHeight, bottom: 40.0),
                     layoutPages: (pages, params) {
                       final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
                       final pageLayout = <Rect>[];
-                      var y = params.margin + 85.0;
+                      var y = params.margin;
                       for (var i = 0; i < pages.length; i++) {
                         final page = pages[i];
                         final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
