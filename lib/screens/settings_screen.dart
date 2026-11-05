@@ -138,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
               const SizedBox(height: 14),
-              AdService.fixedNative(),
+              AdService.dynamicNative(),
               const SizedBox(height: 14),
               GlassCard(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
