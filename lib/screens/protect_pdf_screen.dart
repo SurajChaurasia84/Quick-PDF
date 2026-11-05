@@ -10,7 +10,7 @@ import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class ProtectPdfScreen extends StatefulWidget {
   const ProtectPdfScreen({
@@ -240,11 +240,7 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: protectedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: protectedFile, title: 'PDF Protected Successfully');
   }
 
   String _suggestedOutputName() {
