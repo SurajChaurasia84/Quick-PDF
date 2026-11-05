@@ -10,7 +10,7 @@ import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
 import '../utils/theme_utils.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class UnlockPdfScreen extends StatefulWidget {
   const UnlockPdfScreen({
@@ -197,11 +197,7 @@ class _UnlockPdfScreenState extends State<UnlockPdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: unlockedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: unlockedFile, title: 'PDF Unlocked Successfully');
   }
 
   String _suggestedOutputName() {
