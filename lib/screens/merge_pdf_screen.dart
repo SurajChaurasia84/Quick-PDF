@@ -10,7 +10,7 @@ import '../models/app_file.dart';
 import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class MergePdfScreen extends StatefulWidget {
   const MergePdfScreen({
@@ -195,11 +195,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: mergedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: mergedFile, title: 'PDF Merged Successfully');
   }
 
   String _suggestedOutputName() {
