@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
@@ -144,6 +145,11 @@ class _UnlockPdfScreenState extends State<UnlockPdfScreen> {
                   icon: const Icon(Icons.lock_open_rounded),
                   label: Text(_isUnlocking ? 'Saving...' : 'Unlock PDF'),
                 ),
+              ),
+              const SizedBox(height: 8),
+              SafeArea(
+                top: false,
+                child: AdService.dynamicBanner(),
               ),
             ],
           ),
