@@ -8,7 +8,7 @@ import '../models/app_file.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
 import '../widgets/glass_card.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -28,6 +28,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   void initState() {
     super.initState();
+    AdService.loadInterstitial();
     _setupCamera();
   }
 
@@ -135,11 +136,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        InstantPageRoute<void>(
-          builder: (_) => DocumentViewerScreen(file: scannedFile),
-        ),
-      );
+      ToolSuccessScreen.show(context, file: scannedFile, title: 'Scan Saved as PDF');
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
