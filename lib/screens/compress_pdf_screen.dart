@@ -10,7 +10,7 @@ import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/formatters.dart';
 import '../utils/instant_page_route.dart';
-import 'document_viewer_screen.dart';
+import 'tool_success_screen.dart';
 
 class CompressPdfScreen extends StatefulWidget {
   const CompressPdfScreen({
@@ -220,11 +220,7 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.of(this.context).pushReplacement(
-      InstantPageRoute<void>(
-        builder: (_) => DocumentViewerScreen(file: compressedFile),
-      ),
-    );
+    ToolSuccessScreen.show(this.context, file: compressedFile, title: 'PDF Compressed Successfully');
   }
 
   String _suggestedOutputName() {
