@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/app_file.dart';
+import '../services/ad_service.dart';
 import '../services/app_controller.dart';
 import '../utils/instant_page_route.dart';
 import 'document_viewer_screen.dart';
@@ -124,6 +125,11 @@ class _WordToPdfScreenState extends State<WordToPdfScreen> {
                 icon: const Icon(Icons.picture_as_pdf_rounded),
                 label: Text(_isConverting ? 'Saving...' : 'Convert to PDF'),
               ),
+            ),
+            const SizedBox(height: 8),
+            SafeArea(
+              top: false,
+              child: AdService.dynamicBanner(),
             ),
           ],
         ),
